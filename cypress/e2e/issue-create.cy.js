@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-function fillIssueForm(
+function fillIssueFormAndAssert(
   description,
   title,
   issueType,
@@ -8,59 +8,124 @@ function fillIssueForm(
   assignee,
   priority
 ) {
-  // Type value to description input field
-  cy.get(".ql-editor").type(description);
-  cy.get(".ql-editor").should("have.text", description);
+  // Description field
+  cy.get(".ql-editor").type(description).should("have.text", description);
 
-  // Type value to title input field
+  // Title
   // Order of filling in the fields is first description, then title on purpose
   // Otherwise filling title first sometimes doesn't work due to web page implementation
-  cy.get('input[name="title"]').type(title);
-  cy.get('input[name="title"]').should("have.value", title);
+  cy.get('input[name="title"]').type(title).should("have.value", title);
 
-  // Issue type
-  cy.get('[data-testid="select:type"]').click();
-  cy.get('[data-testid="select-option:' + issueType + '"]')
-    .wait(1000)
-    .trigger("mouseover")
-    .trigger("click");
-  cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
-    "be.visible"
-  );
+  // Issue Type
+  cy.get('[data-testid="select:type"]')
+    .click()
+    .then(() => {
+      cy.get('[data-testid="select:type"]').then(($element) => {
+        if ($element.text() == issueType) {
+          cy.get("label").contains("Issue Type").click();
+        } else {
+          cy.get('[data-testid="select-option:' + issueType + '"]').click();
+        }
+      });
+    });
+  // cy.get('[data-testid="select:type"]').should("have.value", issueType);
 
   // Reporter
   cy.get('[data-testid="select:reporterId"]')
     .click()
     .then(() => {
-      cy.get('[tabindex="0"]')
-        .contains(reporter)
-        .then(($element) => {
-          if ($element == reporter) {
-            cy.get("label").contains("Reporter").click();
-          } else {
-            cy.get('[data-testid="select-option:' + reporter + '"]').click();
-          }
-        });
+      cy.get('[data-testid="select:reporterId"]').then(($element) => {
+        if ($element.text() == reporter) {
+          cy.get("label").contains("Reporter").click();
+        } else {
+          cy.get('[data-testid="select-option:' + reporter + '"]').click();
+        }
+      });
     });
+  // .should("have.value", reporter);
 
   // Assignee
-  cy.get('[data-testid="form-field:userIds"]').click();
-  cy.get('[data-testid="select-option:' + assignee + '"]').click();
+  cy.get('[data-testid="form-field:userIds"]')
+    .click()
+    .then(() => {
+      if (assignee == "") {
+        cy.get("label").contains("Assignees").click();
+      } else {
+        cy.get('[data-testid="select-option:' + assignee + '"]').click();
+      }
+    });
+  // .should("have.value", assignee);
 
   // Priority
   cy.get('[data-testid="select:priority"]')
     .click()
     .then(() => {
-      cy.get('[tabindex="0"]')
-        .contains(priority)
-        .then(($element) => {
-          if ($element == priority) {
-            cy.get("label").contains("Priority").click();
-          } else {
-            cy.get('[data-testid="select-option:' + priority + '"]').click();
-          }
-        });
+      cy.get('[data-testid="select:priority"]').then(($element) => {
+        if ($element.text() == priority) {
+          cy.get("label").contains("Priority").click();
+        } else {
+          cy.get('[data-testid="select-option:' + priority + '"]').click();
+        }
+      });
     });
+  // .should("contain", priority);
+}
+
+function validateCreatedIssueDisplayed(
+  description,
+  title,
+  issueType,
+  reporter,
+  assignee,
+  priority
+) {
+  // Validate title
+  cy.get('[placeholder="Short summary"]').should("have.text", title);
+
+  // Validate description
+  cy.get(".ql-snow > div > p").should("have.text", description);
+
+  // Validate status is "Backlog"
+  cy.get('[data-testid="select:status"] > div > div').should(
+    "have.text",
+    "Backlog"
+  );
+
+  // Validate issue type icon is visible
+  cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+    "be.visible"
+  );
+
+  // Validate reporter avatar and name
+  cy.get('[data-testid="avatar:' + reporter + '"]').should("be.visible");
+  cy.get('[data-testid="avatar:' + reporter + '"]')
+    .siblings("div")
+    .should("contain", reporter);
+
+  // Validate assignee or unassigned status
+  if (assignee !== "") {
+    // data-testid="select:assignees"
+    cy.get('[data-testid="avatar:' + assignee + '"]').should("be.visible");
+    cy.get('[data-testid="avatar:' + assignee + '"]')
+      .siblings("div")
+      .should("contain", assignee);
+  } else {
+    cy.get('[data-testid="select:assignees"] > div').should(
+      "have.text",
+      "Unassigned"
+    );
+  }
+  // Validate priority
+  cy.get('[data-testid="select:priority"]').within(() => {
+    cy.contains("div", priority).should("have.text", priority);
+  });
+
+  // Validate creation time
+  const creationTimeClassName = ".sc-krDsej.hZoggr";
+  cy.get(creationTimeClassName).should(
+    "contain",
+    "Created at a few seconds ago"
+  );
 }
 
 describe("Issue create", () => {
@@ -84,7 +149,7 @@ describe("Issue create", () => {
 
     // System finds modal for creating issue and does next steps inside of it
     cy.get('[data-testid="modal:issue-create"]').within(() => {
-      fillIssueForm(
+      fillIssueFormAndAssert(
         description,
         title,
         issueType,
@@ -154,16 +219,17 @@ describe("Issue create", () => {
   });
 
   // Assignment 2/ Test case 1
-  it.only("Should create another issue and validate it successfully", () => {
+  it("Should create another issue and validate it successfully", () => {
     const description = "My bug description";
     const title = "Bug";
     const issueType = "Bug";
     const reporter = "Pickle Rick";
     const assignee = "Lord Gaben";
     const priority = "Highest";
+
     // System finds modal for creating issue and does next steps inside of it
     cy.get('[data-testid="modal:issue-create"]').within(() => {
-      fillIssueForm(
+      fillIssueFormAndAssert(
         description,
         title,
         issueType,
@@ -174,13 +240,11 @@ describe("Issue create", () => {
       cy.get('button[type="submit"]').click();
     });
 
-    // Assert that the issue has been created and is visible on the board.
-
     // Assert that modal window is closed and successful message is visible
     cy.get('[data-testid="modal:issue-create"]').should("not.exist");
     cy.contains("Issue has been successfully created.").should("be.visible");
 
-    // Assert that in backlog there is new issue with same title, open it and verify it is made few sec ago
+    // Assert that the first issue has same title, open it and verify it is made few sec ago
     cy.get('[data-testid="list-issue"]')
       .first()
       .find("p")
@@ -194,13 +258,64 @@ describe("Issue create", () => {
       })
       .click();
 
-    const createdTimeClassName = ".sc-krDsej.hZoggr";
-    cy.get(createdTimeClassName).should(
-      "contain",
-      "Created at a few seconds ago"
+    validateCreatedIssueDisplayed(
+      description,
+      title,
+      issueType,
+      reporter,
+      assignee,
+      priority
     );
   });
 
   // Assignment 2/ Test case 2
-  it("Should create an issue with random data", () => {});
+  it("Should create an issue with random data", () => {
+    const randomDescription = faker.lorem.sentence();
+    const randomTitle = faker.word.noun();
+    const issueType = "Task";
+    const reporter = "Baby Yoda";
+    const assignee = ""; // empty value
+    const priority = "Low";
+
+    // System finds modal for creating issue and does next steps inside of it
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+      fillIssueFormAndAssert(
+        randomDescription,
+        randomTitle,
+        issueType,
+        reporter,
+        assignee,
+        priority
+      );
+      cy.get('button[type="submit"]').click();
+    });
+
+    // Assert that modal window is closed and successful message is visible
+    cy.get('[data-testid="modal:issue-create"]').should("not.exist");
+    cy.contains("Issue has been successfully created.").should("be.visible");
+
+    // Assert that the first issue has same title, open it and verify it is made few sec ago
+    cy.get('[data-testid="list-issue"]')
+      .first()
+      .find("p")
+      .contains(randomTitle)
+      .siblings()
+      .within(() => {
+        const avatarClass = ".sc-dnqmqq.jqCWTw.sc-eXEjpC.iLqImh";
+        cy.get(avatarClass).should("not.exist");
+        cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+          "be.visible"
+        );
+      })
+      .click();
+
+    validateCreatedIssueDisplayed(
+      randomDescription,
+      randomTitle,
+      issueType,
+      reporter,
+      assignee,
+      priority
+    );
+  });
 });
