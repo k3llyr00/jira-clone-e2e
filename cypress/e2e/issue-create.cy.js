@@ -1,3 +1,9 @@
+/* *IMPORTANT*
+
+  Sometimes in order to run this script successfully, 
+  it is necessary to run it multiple times! :(
+
+*/
 import { faker } from "@faker-js/faker";
 
 function fillIssueFormAndAssert(
@@ -28,7 +34,7 @@ function fillIssueFormAndAssert(
         }
       });
     });
-  // cy.get('[data-testid="select:type"]').should("have.value", issueType);
+  cy.get('[data-testid="select:type"] div').should("contain", issueType);
 
   // Reporter
   cy.get('[data-testid="select:reporterId"]')
@@ -42,7 +48,7 @@ function fillIssueFormAndAssert(
         }
       });
     });
-  // .should("have.value", reporter);
+  cy.get('[data-testid="select:reporterId"] div').should("contain", reporter);
 
   // Assignee
   cy.get('[data-testid="form-field:userIds"]')
@@ -54,7 +60,10 @@ function fillIssueFormAndAssert(
         cy.get('[data-testid="select-option:' + assignee + '"]').click();
       }
     });
-  // .should("have.value", assignee);
+
+  if (assignee !== "") {
+    cy.get('[data-testid="form-field:userIds"]').should("contain", assignee);
+  }
 
   // Priority
   cy.get('[data-testid="select:priority"]')
@@ -68,7 +77,7 @@ function fillIssueFormAndAssert(
         }
       });
     });
-  // .should("contain", priority);
+  cy.get('[data-testid="select:priority"] div').should("contain", priority);
 }
 
 function validateCreatedIssueDisplayed(
