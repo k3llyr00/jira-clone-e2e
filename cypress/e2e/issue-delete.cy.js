@@ -9,8 +9,7 @@ const cancelButtonTextInConfirm = "Cancel";
 const closeIssueDetailViewButton = ".sc-bdVaJa.fuyACr";
 
 // Functions
-function clickTrashButtonInIssueDetail(title, message) {
-  cy.get('[data-testid="icon:trash"]').click();
+function assertConfirmationModal(title, message) {
   cy.get('[data-testid="modal:confirm"]')
     .should("be.visible")
     .and("contain", title)
@@ -39,24 +38,19 @@ describe("Issue deletion", () => {
 
   // ASSIGNMENT 3: Test Case 1: Issue Deletion
   it("Should delete an issue and validate it successfully", () => {
-    // Delete the issue by clicking the delete button and confirming the deletion.
-    clickTrashButtonInIssueDetail(confirmTitle, confirmMessage);
+    cy.get('[data-testid="icon:trash"]').click();
+    assertConfirmationModal(confirmTitle, confirmMessage);
     clickButtonInConfirm(deleteButtonInConfirm, deleteButtonTextInConfirm);
-
-    // Assert that the deletion confirmation dialogue is not visible.
     cy.get('[data-testid="modal:confirm"]').should("not.exist");
-    // Assert that the issue is deleted and no longer displayed on the Jira board.
     cy.get('[data-testid="list-issue"]').should("not.contain", issueTitle);
   });
 
   // ASSIGNMENT 3: Test Case 2: Issue Deletion Cancellation
   it("Initiating the issue deletion process and then canceling it", () => {
-    clickTrashButtonInIssueDetail(confirmTitle, confirmMessage);
+    cy.get('[data-testid="icon:trash"]').click();
+    assertConfirmationModal(confirmTitle, confirmMessage);
     clickButtonInConfirm(cancelButtonInConfirm, cancelButtonTextInConfirm);
-
-    // Assert that the deletion confirmation dialogue is not visible.
     cy.get('[data-testid="modal:confirm"]').should("not.exist");
-    // Assert that the issue is not deleted and displayed on the Jira board.
     cy.get(closeIssueDetailViewButton).click();
     cy.get('[data-testid="list-issue"]').should("contain", issueTitle);
   });
