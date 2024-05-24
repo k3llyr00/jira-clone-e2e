@@ -22,18 +22,12 @@ function clickButtonInConfirm(button, buttonText) {
 
 describe("Issue deletion", () => {
   beforeEach(() => {
-    cy.visit("/");
-    cy.url()
-      .should("eq", `${Cypress.env("baseUrl")}project`)
-      .then((url) => {
-        cy.visit(url + "/board");
-        cy.contains(issueTitle).click();
-
-        // Assert the visibility of the issue detail view modal
-        cy.get('[data-testid="modal:issue-details"]').should("be.visible");
-        // Assert that correct  issue is opened.
-        cy.get('[placeholder="Short summary"]').should("have.text", issueTitle);
-      });
+    cy.visit("/project/board").then(() => {
+      cy.url().should("eq", `${Cypress.env("baseUrl")}project/board`);
+      cy.contains(issueTitle).click();
+      cy.get('[data-testid="modal:issue-details"]').should("be.visible");
+      cy.get('[placeholder="Short summary"]').should("have.text", issueTitle);
+    });
   });
 
   // ASSIGNMENT 3: Test Case 1: Issue Deletion
