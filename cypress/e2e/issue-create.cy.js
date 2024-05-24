@@ -88,6 +88,8 @@ function validateCreatedIssueDisplayed(
   assignee,
   priority
 ) {
+  cy.get('[data-testid="modal:issue-details"]').should("be.visible");
+
   // Validate title
   cy.get('[placeholder="Short summary"]').should("have.text", title);
 
