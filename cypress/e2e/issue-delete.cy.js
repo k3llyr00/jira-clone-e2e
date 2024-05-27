@@ -2,6 +2,8 @@
 const issueTitle = "This is an issue of type: Task.";
 const confirmTitle = "Are you sure you want to delete this issue?";
 const confirmMessage = "Once you delete, it's gone for good.";
+const confirmWindow = '[data-testid="modal:confirm"]';
+const trashButton = '[data-testid="icon:trash"]';
 const deleteButtonTextInConfirm = "Delete issue";
 const deleteButtonInConfirm = ".sc-bwzfXH.dIxFno.sc-kGXeez.bLOzZQ";
 const cancelButtonInConfirm = ".sc-bwzfXH.ewzfNn.sc-kGXeez.bLOzZQ";
@@ -20,6 +22,17 @@ function clickButtonInConfirm(button, buttonText) {
   cy.get(button).should("contain", buttonText).click();
 }
 
+function IssueVisibilityOnBoard(issueTitle, trueOrFalse) {
+  cy.get('[data-testid="list-issue"]').should("be.visible");
+  cy.reload();
+
+  if (trueOrFalse) {
+    cy.contains(issueTitle).should("be.visible");
+  } else {
+    cy.contains(issueTitle).should("not.exist");
+  }
+}
+
 describe("Issue deletion", () => {
   beforeEach(() => {
     cy.visit("/project/board").then(() => {
@@ -32,20 +45,20 @@ describe("Issue deletion", () => {
 
   // ASSIGNMENT 3: Test Case 1: Issue Deletion
   it("Should delete an issue and validate it successfully", () => {
-    cy.get('[data-testid="icon:trash"]').click();
+    cy.get(trashButton).click();
     assertConfirmationModal(confirmTitle, confirmMessage);
     clickButtonInConfirm(deleteButtonInConfirm, deleteButtonTextInConfirm);
-    cy.get('[data-testid="modal:confirm"]').should("not.exist");
-    cy.get('[data-testid="list-issue"]').should("not.contain", issueTitle);
+    cy.get(confirmWindow).should("not.exist");
+    IssueVisibilityOnBoard(issueTitle, false);
   });
 
   // ASSIGNMENT 3: Test Case 2: Issue Deletion Cancellation
   it("Initiating the issue deletion process and then canceling it", () => {
-    cy.get('[data-testid="icon:trash"]').click();
+    cy.get(trashButton).click();
     assertConfirmationModal(confirmTitle, confirmMessage);
     clickButtonInConfirm(cancelButtonInConfirm, cancelButtonTextInConfirm);
-    cy.get('[data-testid="modal:confirm"]').should("not.exist");
+    cy.get(confirmWindow).should("not.exist");
     cy.get(closeIssueDetailViewButton).click();
-    cy.get('[data-testid="list-issue"]').should("contain", issueTitle);
+    IssueVisibilityOnBoard(issueTitle, true);
   });
 });
