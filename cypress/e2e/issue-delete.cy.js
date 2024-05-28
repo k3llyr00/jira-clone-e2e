@@ -12,7 +12,7 @@ const closeIssueDetailViewButton = ".sc-bdVaJa.fuyACr";
 
 // Functions
 function assertConfirmationModal(title, message) {
-  cy.get('[data-testid="modal:confirm"]')
+  cy.get(confirmWindow)
     .should("be.visible")
     .and("contain", title)
     .and("contain", message);

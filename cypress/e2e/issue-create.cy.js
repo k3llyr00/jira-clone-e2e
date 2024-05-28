@@ -30,7 +30,7 @@ function fillIssueFormAndAssert(
         if ($element.text() == issueType) {
           cy.get("label").contains("Issue Type").click();
         } else {
-          cy.get('[data-testid="select-option:' + issueType + '"]').click();
+          cy.get(`[data-testid="select-option:${issueType}"]`).click();
         }
       });
     });
@@ -44,7 +44,7 @@ function fillIssueFormAndAssert(
         if ($element.text() == reporter) {
           cy.get("label").contains("Reporter").click();
         } else {
-          cy.get('[data-testid="select-option:' + reporter + '"]').click();
+          cy.get(`[data-testid="select-option:${reporter}"]`).click();
         }
       });
     });
@@ -57,7 +57,7 @@ function fillIssueFormAndAssert(
       if (assignee == "") {
         cy.get("label").contains("Assignees").click();
       } else {
-        cy.get('[data-testid="select-option:' + assignee + '"]').click();
+        cy.get(`[data-testid="select-option:${assignee}"]`).click();
       }
     });
 
@@ -73,7 +73,7 @@ function fillIssueFormAndAssert(
         if ($element.text() == priority) {
           cy.get("label").contains("Priority").click();
         } else {
-          cy.get('[data-testid="select-option:' + priority + '"]').click();
+          cy.get(`[data-testid="select-option:${priority}"]`).click();
         }
       });
     });
@@ -103,21 +103,21 @@ function validateCreatedIssueDisplayed(
   );
 
   // Validate issue type icon is visible
-  cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+  cy.get(`[data-testid="icon:${issueType.toLowerCase()}"]`).should(
     "be.visible"
   );
 
   // Validate reporter avatar and name
-  cy.get('[data-testid="avatar:' + reporter + '"]').should("be.visible");
-  cy.get('[data-testid="avatar:' + reporter + '"]')
+  cy.get(`[data-testid="avatar:${reporter}"]`).should("be.visible");
+  cy.get(`[data-testid="avatar:${reporter}"]`)
     .siblings("div")
     .should("contain", reporter);
 
   // Validate assignee or unassigned status
   if (assignee !== "") {
     // data-testid="select:assignees"
-    cy.get('[data-testid="avatar:' + assignee + '"]').should("be.visible");
-    cy.get('[data-testid="avatar:' + assignee + '"]')
+    cy.get(`[data-testid="avatar:${assignee}"]`).should("be.visible");
+    cy.get(`[data-testid="avatar:${assignee}"]`)
       .siblings("div")
       .should("contain", assignee);
   } else {
@@ -195,12 +195,10 @@ describe("Issue create", () => {
           .siblings()
           .within(() => {
             //Assert that correct avatar and type icon are visible
-            cy.get('[data-testid="avatar:' + assignee + '"]').should(
+            cy.get(`[data-testid="avatar:${assignee}"]`).should("be.visible");
+            cy.get(`[data-testid="icon:${issueType.toLowerCase()}"]`).should(
               "be.visible"
             );
-            cy.get(
-              '[data-testid="icon:' + issueType.toLowerCase() + '"]'
-            ).should("be.visible");
           });
       });
 
@@ -208,8 +206,8 @@ describe("Issue create", () => {
       .contains(title)
       .within(() => {
         // Assert that correct avatar and type icon are visible
-        cy.get('[data-testid="avatar:' + assignee + '"]').should("be.visible");
-        cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+        cy.get(`[data-testid="avatar:${assignee}"]`).should("be.visible");
+        cy.get(`[data-testid="icon:${issueType.toLowerCase()}"]`).should(
           "be.visible"
         );
       });
@@ -262,8 +260,8 @@ describe("Issue create", () => {
       .contains(title)
       .siblings()
       .within(() => {
-        cy.get('[data-testid="avatar:' + assignee + '"]').should("be.visible");
-        cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+        cy.get(`[data-testid="avatar:${assignee}"]`).should("be.visible");
+        cy.get(`[data-testid="icon:${issueType.toLowerCase()}"]`).should(
           "be.visible"
         );
       })
@@ -314,7 +312,7 @@ describe("Issue create", () => {
       .within(() => {
         const avatarClass = ".sc-dnqmqq.jqCWTw.sc-eXEjpC.iLqImh";
         cy.get(avatarClass).should("not.exist");
-        cy.get('[data-testid="icon:' + issueType.toLowerCase() + '"]').should(
+        cy.get(`[data-testid="icon:${issueType.toLowerCase()}"]`).should(
           "be.visible"
         );
       })
