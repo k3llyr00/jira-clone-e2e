@@ -12,7 +12,7 @@ class IssueComment {
     this.EditBtn = "Edit";
     this.changedComment = faker.lorem.sentence();
     this.deleteBtn = "Delete";
-    this.confirmModal = ".sc-fjdhpX.fcTZzd.sc-cSHVUG.knKKwp";
+    this.confirmModalWindow = '[data-testid="modal:confirm"]';
     this.confirmDeleteBtn = "button:contains('Delete comment')";
   }
 
@@ -63,16 +63,21 @@ class IssueComment {
     });
   }
 
-  getConfrimDeleteBtn() {
-    return cy.get(this.confirmDeleteBtn);
+  getConfrimModal() {
+    return cy.get(this.confirmModalWindow);
   }
 
   deleteComment() {
-    // cant find confirm window
-    this.getIssueDetailModal().within(() => {
-      this.getIssueComments().contains(this.deleteBtn).click();
-      this.getConfrimDeleteBtn().click();
-    });
+    this.getIssueDetailModal()
+      .find(this.issueCommentsSelector)
+      .contains(this.deleteBtn)
+      .click();
+    this.getConfrimModal()
+      .find(this.confirmDeleteBtn)
+      .click()
+      .should("not.exist");
+
+    this.getIssueDetailModal().should("not.contain", this.changedComment);
   }
 }
 

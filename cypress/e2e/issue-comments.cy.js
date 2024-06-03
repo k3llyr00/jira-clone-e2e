@@ -1,5 +1,3 @@
-import IssueComment from "../pages/IssueComment";
-
 describe("Issue comments creating, editing and deleting", () => {
   beforeEach(() => {
     cy.visit("/");
@@ -7,7 +5,7 @@ describe("Issue comments creating, editing and deleting", () => {
       .should("eq", `${Cypress.env("baseUrl")}project/board`)
       .then((url) => {
         cy.visit(url + "/board");
-        cy.contains(IssueComment.issueTitle).click();
+        cy.contains("This is an issue of type: Task.").click();
       });
   });
 
@@ -67,11 +65,5 @@ describe("Issue comments creating, editing and deleting", () => {
     getIssueDetailsModal()
       .find('[data-testid="issue-comment"]')
       .should("not.exist");
-  });
-
-  it.only("Add, edit and delete issue comments", () => {
-    IssueComment.addNewComment();
-    IssueComment.editComment();
-    IssueComment.deleteComment();
   });
 });
