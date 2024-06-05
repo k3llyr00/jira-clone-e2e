@@ -5,6 +5,7 @@ class IssueComment {
     this.issueTitle = "This is an issue of type: Task.";
     this.changedComment = faker.lorem.sentence();
     this.originalComment = faker.lorem.sentence();
+    this.timeout = { timeout: 60000 };
 
     // Selectors
     this.listIssue = '[data-testid="list-issue"]';
@@ -49,7 +50,9 @@ class IssueComment {
       this.getCommentArea2().type(this.originalComment);
       this.getSaveButton().click().should("not.exist");
       this.getCommentArea().should("exist");
-      this.getIssueComments().should("contain", this.originalComment);
+      this.getIssueComments()
+        .should("have.length", "2")
+        .first("contain", this.originalComment);
     });
   }
 
@@ -66,7 +69,9 @@ class IssueComment {
         .type(this.changedComment);
       this.getSaveButton().click().should("not.exist");
       this.getCommentArea().should("exist");
-      this.getIssueComments().should("contain", this.changedComment);
+      this.getIssueComments()
+        .should("have.length", "2")
+        .first("contain", this.changedComment);
     });
   }
 
@@ -79,7 +84,7 @@ class IssueComment {
       .find(this.confirmDeleteBtn)
       .click()
       .should("not.exist");
-
+    this.getIssueComments().should("have.length", "1");
     this.getIssueDetailModal().should("not.contain", this.changedComment);
   }
 }
