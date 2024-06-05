@@ -3,14 +3,17 @@ import { faker } from "@faker-js/faker";
 class IssueComment {
   constructor() {
     this.issueTitle = "This is an issue of type: Task.";
+    this.changedComment = faker.lorem.sentence();
     this.originalComment = faker.lorem.sentence();
+
+    // Selectors
+    this.listIssue = '[data-testid="list-issue"]';
     this.issueDetailModalSelector = '[data-testid="modal:issue-details"]';
     this.commentAreaSelector2 = 'textarea[placeholder="Add a comment..."]';
     this.commentAreaSelector = "Add a comment...";
     this.saveButtonSelector = "button:contains('Save')";
     this.issueCommentsSelector = '[data-testid="issue-comment"]';
-    this.EditBtn = "Edit";
-    this.changedComment = faker.lorem.sentence();
+    this.editBtn = "Edit";
     this.deleteBtn = "Delete";
     this.confirmModalWindow = '[data-testid="modal:confirm"]';
     this.confirmDeleteBtn = "button:contains('Delete comment')";
@@ -36,6 +39,10 @@ class IssueComment {
     return cy.get(this.issueCommentsSelector);
   }
 
+  getConfirmModal() {
+    return cy.get(this.confirmModalWindow);
+  }
+
   addNewComment() {
     this.getIssueDetailModal().within(() => {
       this.getCommentArea().click();
@@ -50,7 +57,7 @@ class IssueComment {
     this.getIssueDetailModal().within(() => {
       this.getIssueComments()
         .first()
-        .contains(this.EditBtn)
+        .contains(this.editBtn)
         .click()
         .should("not.exist");
       this.getCommentArea2()
@@ -63,16 +70,12 @@ class IssueComment {
     });
   }
 
-  getConfrimModal() {
-    return cy.get(this.confirmModalWindow);
-  }
-
   deleteComment() {
     this.getIssueDetailModal()
       .find(this.issueCommentsSelector)
       .contains(this.deleteBtn)
       .click();
-    this.getConfrimModal()
+    this.getConfirmModal()
       .find(this.confirmDeleteBtn)
       .click()
       .should("not.exist");
