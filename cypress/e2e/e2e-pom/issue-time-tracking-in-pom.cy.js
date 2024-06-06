@@ -1,3 +1,10 @@
+/*
+if there are difficulties to pass the tests, 
+please change following values in cypress.config.js file to:
+    defaultCommandTimeout: 60000,
+    requestTimeout: 60000,
+*/
+
 import IssueTimeTracking from "../../pages/IssueTimeTracking.js";
 
 describe("Issue time tracking with POM approach", () => {
@@ -29,7 +36,31 @@ describe("Issue time tracking with POM approach", () => {
   });
 
   it("Adding, editing and removing the estimation", () => {
-    IssueTimeTracking.validateEmptyEstimation();
+    // When new Issue is created, time tracking values are empty.
+    IssueTimeTracking.validateEmptyTimeFields();
+
+    // Add new ORIGINAL ESTIMATE (HOURS)
     IssueTimeTracking.addNewEstimation();
+
+    // Log spent time
+    IssueTimeTracking.logTime(
+      IssueTimeTracking.randomTimeLogged,
+      IssueTimeTracking.timeSpentInputInModal,
+      "logged"
+    );
+    // Log remaining time
+    IssueTimeTracking.logTime(
+      IssueTimeTracking.randomRemaining,
+      IssueTimeTracking.timeRemainingInputInModal,
+      "remaining"
+    );
+
+    // Edit ORIGINAL ESTIMATE (HOURS)
+    // Edit spent time
+    // Edit remaining time
+
+    // Delete ORIGINAL ESTIMATE (HOURS)
+    // Delete spent time
+    // Delete remaining time
   });
 });

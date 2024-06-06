@@ -14,13 +14,20 @@ class IssueTimeTracking {
     // Time tracker
     this.issueTitle = this.randomTitle;
     this.timeout = { timeout: 60000 };
-    this.originalEstimateHours = 10;
+    this.randomOriginalEstimateHours = faker.number.int({ min: 1, max: 100 });
+    this.randomTimeLogged = faker.number.int({ min: 1, max: 100 });
+    this.randomRemaining = faker.number.int({ min: 1, max: 100 });
+    this.processBarValue;
+    this.estimatedTitleTimeTrackerModal = "Time spent (hours)";
 
     this.listIssue = '[data-testid="list-issue"]';
     this.issueDetailModalSelector = '[data-testid="modal:issue-details"]';
-    this.originalEstimateInputField = 'input[placeholder="Number"]';
+    this.estimatedInputField = 'input[placeholder="Number"]';
     this.stopwatchIcon = '[data-testid="icon:stopwatch"]';
-    this.timeTrackingLabel = "Time Tracking";
+    this.timeTrackingModal = '[data-testid="modal:tracking"]';
+    this.timeSpentInputInModal = 0;
+    this.timeRemainingInputInModal = 1;
+    this.doneButtonTimeTracker = "Done";
   }
 
   getCreateIssueBtn() {
@@ -39,6 +46,37 @@ class IssueTimeTracking {
     return cy.get(this.issueSubmit);
   }
 
+  getIssueDetailModal() {
+    return cy.get(this.issueDetailModalSelector);
+  }
+
+  getEstimatedField() {
+    return cy.get(this.estimatedInputField);
+  }
+
+  getStopwatchIcon() {
+    return cy.get(this.stopwatchIcon);
+  }
+
+  getProgressBar(expectedWidth) {
+    return cy
+      .get(this.stopwatchIcon)
+      .parent()
+      .find(`[width*="${expectedWidth}"]`);
+  }
+
+  getTimeTrackingModal() {
+    return cy.get(this.timeTrackingModal);
+  }
+
+  getTimeTrackingInputFieldInModal(field) {
+    return cy.get(this.estimatedInputField).eq(field);
+  }
+
+  getDoneButtonTimeTrackingModal() {
+    return cy.contains(this.doneButtonTimeTracker);
+  }
+
   createIssue(description, title) {
     this.getCreateIssueBtn().click();
     this.getIssueDescription()
@@ -48,43 +86,96 @@ class IssueTimeTracking {
     this.getIssueSubmitBtn().click();
   }
 
-  getIssueDetailModal() {
-    return cy.get(this.issueDetailModalSelector);
+  calculateExpectedProcessBar(
+    isEstimatedOverwritten,
+    estimatedHours,
+    timeLogged
+  ) {
+    if (isEstimatedOverwritten === false) {
+      if ((estimatedHours && !timeLogged) || (!estimatedHours && !timeLogged)) {
+        this.processBarValue = 0;
+      } else {
+        if (this.randomTimeLogged > this.randomOriginalEstimateHours) {
+          this.processBarValue = 100;
+        } else {
+          this.processBarValue = Math.max(
+            1,
+            Math.round(
+              (this.randomTimeLogged / this.randomOriginalEstimateHours) * 100
+            )
+          );
+        }
+      }
+    } else {
+      this.processBarValue = Math.max(
+        1,
+        Math.round(
+          (this.randomTimeLogged /
+            (this.randomTimeLogged + this.randomRemaining)) *
+            100
+        )
+      );
+    }
+    return this.processBarValue;
   }
 
-  getOriginalEstimate() {
-    return cy.get(this.originalEstimateInputField);
-  }
-
-  getStopwatchIcon() {
-    return cy.get(this.stopwatchIcon);
-  }
-
-  getTimeBar() {
-    return cy.get('[width="0"]');
-  }
-
-  validateEmptyEstimation() {
+  validateEmptyTimeFields() {
     this.getIssueDetailModal().within(() => {
-      this.getOriginalEstimate()
+      this.getEstimatedField()
         .should("have.value", "")
         .and("have.attr", "placeholder", "Number");
-      this.getStopwatchIcon()
-        .next()
-        .children()
-        .should("contain", "No time logged");
-      this.getTimeBar().should("exist");
+      this.timeAssertion(false);
+      this.getProgressBar(
+        this.calculateExpectedProcessBar(false, false, false)
+      );
     });
   }
 
   addNewEstimation() {
     this.getIssueDetailModal().within(() => {
-      this.getOriginalEstimate().click().type(this.originalEstimateHours);
+      this.getEstimatedField().click().type(this.randomOriginalEstimateHours);
+      this.timeAssertion(true, this.randomOriginalEstimateHours, "estimated");
+      this.getProgressBar(this.calculateExpectedProcessBar(false, true, false));
+    });
+  }
+
+  logTime(time, inputFieldIndex, type) {
+    this.getIssueDetailModal().within(() => {
+      this.getStopwatchIcon().click();
+    });
+    this.getTimeTrackingModal()
+      .should("be.visible")
+      .within(() => {
+        this.getTimeTrackingInputFieldInModal(inputFieldIndex).type(time);
+        this.getDoneButtonTimeTrackingModal().click();
+      });
+    this.getTimeTrackingModal().should("not.exist");
+    this.timeAssertion(true, time, type);
+    console.log(
+      "Remaining should activate the if-clause",
+      time == this.randomRemaining,
+      time,
+      this.randomRemaining
+    );
+    if (time == this.randomRemaining) {
+      this.getProgressBar(this.calculateExpectedProcessBar(true, true, true));
+    } else {
+      this.getProgressBar(this.calculateExpectedProcessBar(false, true, true));
+    }
+  }
+
+  timeAssertion(notEmpty, value, type) {
+    if (notEmpty) {
       this.getStopwatchIcon()
         .next()
         .children()
-        .should("contain", `${this.originalEstimateHours}h estimated`);
-    });
+        .should("contain", `${value}h ${type}`);
+    } else {
+      this.getStopwatchIcon()
+        .next()
+        .children()
+        .should("contain", "No time logged");
+    }
   }
 }
 
