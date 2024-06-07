@@ -40,27 +40,64 @@ describe("Issue time tracking with POM approach", () => {
     IssueTimeTracking.validateEmptyTimeFields();
 
     // Add new ORIGINAL ESTIMATE (HOURS)
-    IssueTimeTracking.addNewEstimation();
+    IssueTimeTracking.addNewEstimation(false);
 
     // Log spent time
     IssueTimeTracking.logTime(
+      false,
       IssueTimeTracking.randomTimeLogged,
       IssueTimeTracking.timeSpentInputInModal,
       "logged"
     );
     // Log remaining time
     IssueTimeTracking.logTime(
+      true,
       IssueTimeTracking.randomRemaining,
       IssueTimeTracking.timeRemainingInputInModal,
       "remaining"
     );
 
     // Edit ORIGINAL ESTIMATE (HOURS)
+    IssueTimeTracking.editEstimation(true, true);
     // Edit spent time
+    IssueTimeTracking.editLogTime(
+      true,
+      IssueTimeTracking.randomTimeLoggedChanged,
+      IssueTimeTracking.timeSpentInputInModal,
+      "logged"
+    );
     // Edit remaining time
-
+    IssueTimeTracking.editLogTime(
+      true,
+      IssueTimeTracking.randomRemainingChanged,
+      IssueTimeTracking.timeRemainingInputInModal,
+      "remaining"
+    );
     // Delete ORIGINAL ESTIMATE (HOURS)
+    IssueTimeTracking.deleteEstimateTime();
+
     // Delete spent time
+    IssueTimeTracking.deleteLogTime(
+      IssueTimeTracking.randomTimeLoggedChanged,
+      IssueTimeTracking.timeSpentInputInModal
+    );
+
+    // Validate that Logged time is deleted
+    IssueTimeTracking.timeAssertion(
+      false,
+      true,
+      false,
+      IssueTimeTracking.randomTimeLoggedChanged,
+      "logged"
+    );
+
     // Delete remaining time
+    IssueTimeTracking.deleteLogTime(
+      IssueTimeTracking.randomRemainingChanged,
+      IssueTimeTracking.timeRemainingInputInModal
+    );
+
+    // Validate that all times are deleted
+    IssueTimeTracking.validateEmptyTimeFields();
   });
 });
