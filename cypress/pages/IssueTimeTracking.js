@@ -4,7 +4,7 @@ class IssueTimeTracking {
   constructor() {
     // Creating Issue
     this.randomDescription = faker.lorem.sentence();
-    this.randomTitle = faker.word.noun();
+    this.randomTitle = faker.lorem.words(3);
 
     this.createIssueBtn = '[data-testid="icon:plus"]';
     this.issueDescription = ".ql-editor";
@@ -18,7 +18,6 @@ class IssueTimeTracking {
     this.randomTimeLogged = faker.number.int({ min: 1, max: 100 });
     this.randomRemaining = faker.number.int({ min: 1, max: 100 });
     this.processBarValue;
-    this.estimatedTitleTimeTrackerModal = "Time spent (hours)";
 
     this.listIssue = '[data-testid="list-issue"]';
     this.issueDetailModalSelector = '[data-testid="modal:issue-details"]';
@@ -27,7 +26,6 @@ class IssueTimeTracking {
     this.timeTrackingModal = '[data-testid="modal:tracking"]';
     this.timeSpentInputInModal = 0;
     this.timeRemainingInputInModal = 1;
-    this.doneButtonTimeTracker = "Done";
   }
 
   getCreateIssueBtn() {
@@ -58,11 +56,19 @@ class IssueTimeTracking {
     return cy.get(this.stopwatchIcon);
   }
 
-  getProgressBar(expectedWidth) {
+  getProgressBarWidth() {
     return cy
       .get(this.stopwatchIcon)
       .parent()
-      .find(`[width*="${expectedWidth}"]`);
+      .find("[width]")
+      .invoke("attr", "width")
+      .then((width) => Math.round(Number(width)));
+  }
+
+  verifyProgressBarWidth(expectedWidth) {
+    this.getProgressBarWidth().then((capturedWidth) => {
+      expect(capturedWidth).to.equal(expectedWidth);
+    });
   }
 
   getTimeTrackingModal() {
@@ -74,7 +80,7 @@ class IssueTimeTracking {
   }
 
   getDoneButtonTimeTrackingModal() {
-    return cy.contains(this.doneButtonTimeTracker);
+    return cy.contains("Done");
   }
 
   createIssue(description, title) {
@@ -91,20 +97,18 @@ class IssueTimeTracking {
     estimatedHours,
     timeLogged
   ) {
-    if (isEstimatedOverwritten === false) {
+    if (!isEstimatedOverwritten) {
       if ((estimatedHours && !timeLogged) || (!estimatedHours && !timeLogged)) {
         this.processBarValue = 0;
+      } else if (this.randomTimeLogged > this.randomOriginalEstimateHours) {
+        this.processBarValue = 100;
       } else {
-        if (this.randomTimeLogged > this.randomOriginalEstimateHours) {
-          this.processBarValue = 100;
-        } else {
-          this.processBarValue = Math.max(
-            1,
-            Math.round(
-              (this.randomTimeLogged / this.randomOriginalEstimateHours) * 100
-            )
-          );
-        }
+        this.processBarValue = Math.max(
+          1,
+          Math.round(
+            (this.randomTimeLogged / this.randomOriginalEstimateHours) * 100
+          )
+        );
       }
     } else {
       this.processBarValue = Math.max(
@@ -125,9 +129,13 @@ class IssueTimeTracking {
         .should("have.value", "")
         .and("have.attr", "placeholder", "Number");
       this.timeAssertion(false);
-      this.getProgressBar(
-        this.calculateExpectedProcessBar(false, false, false)
+
+      const expectedWidth = this.calculateExpectedProcessBar(
+        false,
+        false,
+        false
       );
+      this.verifyProgressBarWidth(expectedWidth);
     });
   }
 
@@ -135,7 +143,13 @@ class IssueTimeTracking {
     this.getIssueDetailModal().within(() => {
       this.getEstimatedField().click().type(this.randomOriginalEstimateHours);
       this.timeAssertion(true, this.randomOriginalEstimateHours, "estimated");
-      this.getProgressBar(this.calculateExpectedProcessBar(false, true, false));
+
+      const expectedWidth = this.calculateExpectedProcessBar(
+        false,
+        true,
+        false
+      );
+      this.verifyProgressBarWidth(expectedWidth);
     });
   }
 
@@ -151,16 +165,13 @@ class IssueTimeTracking {
       });
     this.getTimeTrackingModal().should("not.exist");
     this.timeAssertion(true, time, type);
-    console.log(
-      "Remaining should activate the if-clause",
-      time == this.randomRemaining,
-      time,
-      this.randomRemaining
-    );
+
     if (time == this.randomRemaining) {
-      this.getProgressBar(this.calculateExpectedProcessBar(true, true, true));
+      const expectedWidth = this.calculateExpectedProcessBar(true, true, true);
+      this.verifyProgressBarWidth(expectedWidth);
     } else {
-      this.getProgressBar(this.calculateExpectedProcessBar(false, true, true));
+      const expectedWidth = this.calculateExpectedProcessBar(false, true, true);
+      this.verifyProgressBarWidth(expectedWidth);
     }
   }
 
