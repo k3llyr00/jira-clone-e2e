@@ -20,7 +20,7 @@ class IssueTimeTracking {
     this.randomTimeLoggedChanged = faker.number.int({ min: 1, max: 100 });
     this.randomRemaining = faker.number.int({ min: 1, max: 100 });
     this.randomRemainingChanged = faker.number.int({ min: 1, max: 100 });
-    this.processBarValue;
+    this.progressBarValue;
 
     this.listIssue = '[data-testid="list-issue"]';
     this.issueDetailModalSelector = '[data-testid="modal:issue-details"]';
@@ -95,7 +95,7 @@ class IssueTimeTracking {
     this.getIssueSubmitBtn().click();
   }
 
-  calculateExpectedProcessBar(
+  calculateExpectedProgressBar(
     isEstimatedOverwritten,
     estimatedHours,
     timeLogged,
@@ -105,22 +105,22 @@ class IssueTimeTracking {
   ) {
     if (!isEstimatedOverwritten) {
       if ((estimatedHours && !timeLogged) || (!estimatedHours && !timeLogged)) {
-        this.processBarValue = 0;
+        this.progressBarValue = 0;
       } else if (randomLogged > randomEstimated) {
-        this.processBarValue = 100;
+        this.progressBarValue = 100;
       } else {
-        this.processBarValue = Math.max(
+        this.progressBarValue = Math.max(
           1,
           Math.round((randomLogged / randomEstimated) * 100)
         );
       }
     } else {
-      this.processBarValue = Math.max(
+      this.progressBarValue = Math.max(
         1,
         Math.round((randomLogged / (randomLogged + randomRemaining)) * 100)
       );
     }
-    return this.processBarValue;
+    return this.progressBarValue;
   }
 
   validateEmptyTimeFields() {
@@ -130,7 +130,7 @@ class IssueTimeTracking {
         .and("have.attr", "placeholder", "Number");
       this.timeAssertion(false);
 
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         false,
         false,
         false,
@@ -147,7 +147,7 @@ class IssueTimeTracking {
       this.getEstimatedField().click().type(this.randomOriginalEstimateHours);
       this.timeAssertion(false, isEstimatedOverwritten, false, true, false);
 
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         false,
         true,
         false,
@@ -177,7 +177,7 @@ class IssueTimeTracking {
         "remaining"
       );
 
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         true,
         true,
         true,
@@ -213,7 +213,7 @@ class IssueTimeTracking {
     this.timeAssertion(true, isEstimatedOverwritten, false, time, type);
 
     if (time == this.randomRemaining) {
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         true,
         true,
         true,
@@ -223,7 +223,7 @@ class IssueTimeTracking {
       );
       this.verifyProgressBarWidth(expectedWidth);
     } else {
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         false,
         true,
         true,
@@ -252,7 +252,7 @@ class IssueTimeTracking {
 
     if (time == this.randomRemainingChanged) {
       console.log("editTime time equals this.randomRemainingChanged");
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         true,
         true,
         true,
@@ -263,7 +263,7 @@ class IssueTimeTracking {
       this.verifyProgressBarWidth(expectedWidth);
     } else {
       console.log("editTime time else-clause");
-      const expectedWidth = this.calculateExpectedProcessBar(
+      const expectedWidth = this.calculateExpectedProgressBar(
         true,
         true,
         true,
