@@ -68,7 +68,7 @@ describe("Issue details editing", () => {
     });
   });
 
-  it.only("Validate the Priority dropdown on the issue detail page", () => {
+  it("Validate the Priority dropdown on the issue detail page", () => {
     // Variables
     const expectedLength = 5;
     let arrayOfPriorities = [];
@@ -102,5 +102,18 @@ describe("Issue details editing", () => {
 
     // Assert the length of the array after all options are added
     cy.wrap(arrayOfPriorities).its("length").should("eq", expectedLength);
+  });
+
+  it.only("Verify that the reporter’s name has only characters in it", () => {
+    const reporterSelector = '[data-testid="select:reporter"]';
+    cy.get(reporterSelector)
+      .invoke("text")
+      .then((text) => {
+        const textArray = text.split(" ");
+        const trimmedText = textArray.join("");
+        for (let i = 0; i < trimmedText.length; i++) {
+          expect(trimmedText[i]).to.match(/^[A-Za-z\s]$/);
+        }
+      });
   });
 });
