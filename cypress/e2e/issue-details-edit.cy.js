@@ -104,7 +104,7 @@ describe("Issue details editing", () => {
     cy.wrap(arrayOfPriorities).its("length").should("eq", expectedLength);
   });
 
-  it.only("Verify that the reporter’s name has only characters in it", () => {
+  it("Verify that the reporter’s name has only characters in it", () => {
     const reporterSelector = '[data-testid="select:reporter"]';
     cy.get(reporterSelector)
       .invoke("text")

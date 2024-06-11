@@ -327,4 +327,34 @@ describe("Issue create", () => {
       priority
     );
   });
+  it.only("verify that the Jira Clone application is removing unnecessary spaces on the board view", () => {
+    const randomDescription = faker.lorem.sentence();
+    const issueTitleWithExtraSpaces = `   ${faker.word.noun()}   `;
+
+    // Creating the issue
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+      cy.get(".ql-editor")
+        .type(randomDescription)
+        .should("have.text", randomDescription);
+      cy.get('input[name="title"]')
+        .type(issueTitleWithExtraSpaces)
+        .should("have.value", issueTitleWithExtraSpaces);
+      cy.get('button[type="submit"]').click();
+    });
+    const trimmedTitle = issueTitleWithExtraSpaces.trim();
+
+    // Validate that the board have trimmed title
+    cy.get('[data-testid="list-issue"]', { timeout: 60000 })
+      .first()
+      .should("be.visible")
+      .and("contain", trimmedTitle)
+      .click();
+
+    // Validate that issue detail view have original with extra spaces version
+    cy.get('[data-testid="modal:issue-details"]').should("be.visible");
+    cy.get('[placeholder="Short summary"]').should(
+      "have.text",
+      issueTitleWithExtraSpaces
+    );
+  });
 });
